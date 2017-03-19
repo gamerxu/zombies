@@ -42,8 +42,7 @@ class TPlayerController : NetworkBehaviour
 
          GetComponent<Play_syncRotation>().Transmit(transform.transform.position, transform.rotation);
 
-         CmdEquip();
-
+         CmdEquip(this.netId);
 
       }
 
@@ -81,12 +80,12 @@ class TPlayerController : NetworkBehaviour
       {
          distance = Vector3.Distance(transform.position, transFormValue);
 
-        
+
          Quaternion lerpRota = Quaternion.Lerp(transform.localRotation, Quaternion.LookRotation(transFormValue), Time.deltaTime * 15);
          if (transform.localRotation != lerpRota)
          {
             transform.localRotation = lerpRota;
-          
+
          }
 
          transFormValue *= Time.deltaTime;
@@ -105,47 +104,21 @@ class TPlayerController : NetworkBehaviour
 
 
    [Command]
-   void CmdEquip()
+   void CmdEquip(NetworkInstanceId parentId)
    {
-      if(isServer)
-      {
-         GameObject weapon = Resources.Load("prefeb/items/weapons/M4A1/M4A1") as GameObject;
-         //Debug.Log(weapon.transform.rotation);
-         GameObject weapon_clone = GameObject.Instantiate(weapon, weapon.transform.position, weapon.transform.rotation);
-         weapon_clone.GetComponent<GunPositionSync>().gunQuaternion = weapon_clone.transform.rotation;
-         weapon_clone.GetComponent<GunPositionSync>().parentNetId = this.netId;
-         weapon.transform.localRotation = weapon.transform.rotation;
-         weapon_clone.SetActive(true);
 
-         NetworkServer.SpawnWithClientAuthority(weapon_clone, connectionToClient);
-         
-         /*
-         GameObject playObj = ClientScene.FindLocalObject(this.netId);
-         
-         Transform[] arms = playObj.GetComponentsInChildren<Transform>();
-         foreach (Transform o in arms)
-         {
-            //Debug.Log(o.name);
-            if (o.name.Equals("swat:RightHandRing1"))
-            {
+      GameObject weapon = Resources.Load("prefeb/items/weapons/M4A1/M4A1") as GameObject;
+      //Debug.Log(weapon.transform.rotation);
+      GameObject weapon_clone = GameObject.Instantiate(weapon, weapon.transform.position, weapon.transform.rotation);
+      weapon_clone.GetComponent<GunController>().gunQuaternion = weapon_clone.transform.rotation;
+      weapon_clone.GetComponent<GunController>().parentNetId = parentId;
+      weapon.transform.localRotation = weapon.transform.rotation;
+      weapon_clone.SetActive(true);
 
-               weapon_clone.transform.position = o.transform.position;
-               weapon_clone.transform.parent = o.transform;
-              // weapon_clone.GetComponent<GunPositionSync>().handMount = o;
-               weapon_clone.GetComponent<GunPositionSync>().gunQuaternion = weapon.transform.rotation;
-               weapon_clone.SetActive(true);
-               break;
-            }
-         }
+      //NetworkServer.Spawn(weapon_clone);
+      NetworkServer.SpawnWithClientAuthority(weapon_clone, connectionToClient);
 
-        
 
-         Debug.Log("weapon_clone : " + weapon_clone.transform.rotation);
-
-         RpcEquip(weapon_clone.GetComponent<NetworkIdentity>().netId, weapon.transform.rotation);
-      */
-      }
-     
    }
 
 }

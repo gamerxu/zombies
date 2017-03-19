@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityStandardAssets.CrossPlatformInput;
 
 public class GunController : NetworkBehaviour
 {
@@ -11,7 +12,9 @@ public class GunController : NetworkBehaviour
    [SerializeField]
    private float fireInterval = 0.3f;
 
+   [SyncVar]
    private bool firing = false;
+   [SyncVar]
    private Vector3 fireRot;
 
    [SerializeField]
@@ -20,44 +23,99 @@ public class GunController : NetworkBehaviour
    [SerializeField]
    private GameObject fireEffect;
 
+   [SerializeField]
+   private Transform firePoint;
+
+
+   [SyncVar]
+   public Quaternion gunQuaternion;
+
+   [SyncVar]
+   public NetworkInstanceId parentNetId;
+
+   private GameObject character;
+
+   
+
    //private GameObject currentFireEffect;
 
    // Use this for initialization
    void Start()
    {
-      Debug.Log("Gun start " + isLocalPlayer);
+      character = ClientScene.FindLocalObject(parentNetId);
    }
 
    // Update is called once per frame
    void FixedUpdate()
    {
-      if(!isLocalPlayer)
+      if (!isLocalPlayer)
       {
          return;
       }
 
-      if (firing && Time.time - lastFire >= fireInterval)
+
+   }
+
+   void Update()
+   {
+     
+      if (!character.GetComponent<NetworkBehaviour>().isLocalPlayer)
       {
-         
+         return;
+      }
+     
+      if (CrossPlatformInputManager.GetButton("Fire1"))
+      {
+         CmdFire();
+      }
+      else if (CrossPlatformInputManager.GetButtonUp("Fire1"))
+      {
+      }
+
+   }
+
+   [ClientRpc]
+   void RpcFireBullet(NetworkInstanceId shooterNetId, NetworkInstanceId bulletNetId)
+   {
+      if (isClient)
+      {
+         GameObject shooter = ClientScene.FindLocalObject(shooterNetId);
+         GameObject bullet = ClientScene.FindLocalObject(bulletNetId);
+         bullet.GetComponent<Rigidbody>().velocity = shooter.transform.forward * 10;
+      }
+
+   }
+
+   [Command]
+   public void CmdFire()
+   {
+
+      if (Time.time - lastFire >= fireInterval)
+      {
+
          lastFire = Time.time;
-         GameObject bullet_clone = GameObject.Instantiate(this.bullet, transform.position, Quaternion.identity) as GameObject;
+        
+         GameObject bullet_clone = GameObject.Instantiate(this.bullet, firePoint.position, firePoint.rotation) as GameObject;
+
          FireEffect();
         
+         bullet_clone.GetComponent<Rigidbody>().velocity = bullet_clone.transform.forward * 10;
          GetComponent<AudioSource>().Play();
-         bullet_clone.GetComponent<Rigidbody>().velocity = fireRot * 10;
-      } else
+         NetworkServer.Spawn(bullet_clone);
+
+
+         //bullet_clone.GetComponent<Rigidbody>().AddForce(shooter.transform.forward * 10);
+
+         // RpcFireBullet(shooterNetId, bullet_clone.GetComponent<NetworkIdentity>().netId);
+      }
+      else
       {
          //if(currentFireEffect != null)
          //{
-          //  Destroy(currentFireEffect.gameObject);
+         //  Destroy(currentFireEffect.gameObject);
          //}
       }
-   }
 
-   public void Fire(bool fire, Vector3 fireRot)
-   {
-      firing = fire;
-      this.fireRot = fireRot;
    }
 
    void FireEffect()
@@ -72,9 +130,32 @@ public class GunController : NetworkBehaviour
             effectObj.transform.parent = child.transform;
             NetworkServer.Spawn(effectObj);
             Destroy(effectObj, 0.2f);
-            
+
             //Debug.Log("firePoint " + currentFireEffect.transform);
          }
       }
+   }
+
+   public override void OnStartClient()
+   {
+      Debug.Log("OnStartClient " + gunQuaternion);
+
+
+      GameObject parentObject = ClientScene.FindLocalObject(parentNetId);
+      Transform[] arms = parentObject.GetComponentsInChildren<Transform>();
+      foreach (Transform o in arms)
+      {
+         //Debug.Log(o.name);
+         if (o.name.Equals("swat:RightHandRing1"))
+         {
+
+            transform.position = o.transform.position;
+            transform.SetParent(o.transform);
+            // weapon_clone.GetComponent<GunPositionSync>().handMount = o;
+
+            break;
+         }
+      }
+      transform.localRotation = gunQuaternion;
    }
 }

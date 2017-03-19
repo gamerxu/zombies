@@ -8,6 +8,13 @@ using UnityStandardAssets.CrossPlatformInput;
 public class FireController : NetworkBehaviour
 {
 
+   private float lastFire = 0;
+
+   [SerializeField]
+   private float fireInterval = 0.3f;
+   [SerializeField]
+   private GameObject bullet;
+
    private bool m_IsFiring;
    public bool isFiring { get { return m_IsFiring; } }
 
@@ -20,7 +27,7 @@ public class FireController : NetworkBehaviour
    // Update is called once per frame
    void Update()
    {
-      if(!isLocalPlayer)
+      if (!isLocalPlayer)
       {
          return;
       }
@@ -42,18 +49,19 @@ public class FireController : NetworkBehaviour
             }
          }
 
-        
+
          GetComponent<Animator>().SetBool("Fire", true);
          GetComponent<Animator>().SetBool("Run", false);
-         GetComponentInChildren<GunController>().Fire(true, transform.forward);
+         //GetComponentInChildren<GunController>().CmdFire();
+         
       }
       else if (CrossPlatformInputManager.GetButtonUp("Fire1"))
       {
          m_IsFiring = false;
          GetComponent<Animator>().SetBool("Fire", false);
-         GetComponentInChildren<GunController>().Fire(false, transform.forward);
+         // GetComponentInChildren<GunController>().CmdFire(false, transform.forward);
       }
 
    }
-
+   
 }

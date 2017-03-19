@@ -8,20 +8,44 @@ public class BulletScirpt : NetworkBehaviour {
    [SerializeField]
    private GameObject bloodEffect;
 
+   [SerializeField]
+   private float m_moveSpeed = 20;
+   public float moveSpeed { get { return m_moveSpeed; } }
+
+   [SerializeField]
+   private float m_syncPositionThreshold = 0.25f;
+   public float syncPositionThreshold { get { return m_syncPositionThreshold; } }
+
+   [SerializeField]
+   private int m_rotationSpeed = 15;
+   public int rotationSpeed { get { return m_rotationSpeed; } }
+
+   public Vector3 forward;
+
+
    void Awake()
    {
+      
       Destroy(this.gameObject, 2.0f);
    }
 
    // Use this for initialization
    void Start () {
-		
-	}
+     
+   }
 	
 	// Update is called once per frame
-	void Update () {
-		
-	}
+	void FixedUpdate () {
+     /*
+     if(isServer)
+      {
+         syncPosition = transform.position;
+      } else
+      {
+         transform.position = syncPosition;
+      }
+      */
+   }
 
    void OnCollisionEnter(Collision collision)
    {
