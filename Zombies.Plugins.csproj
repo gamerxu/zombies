@@ -175,6 +175,10 @@
     <None Include="Assets\ImportsRes\JMO Assets\WarFX\Shaders\WFX_S Smoke Scroll.shader" />
     <None Include="Assets\ImportsRes\JMO Assets\WarFX\_Effects (Mobile)\MuzzleFlashes\!MuzzleFlash Differences.txt" />
     <None Include="Assets\ImportsRes\JMO Assets\WarFX\_Effects\MuzzleFlashes\!MuzzleFlash Differences.txt" />
+    <None Include="Assets\ImportsRes\X-BARS\Example\Shaders\Rim Lit Bumped Specular.shader" />
+    <None Include="Assets\ImportsRes\X-BARS\ReedMe.txt" />
+    <None Include="Assets\Military1\Standard Assets\Skyboxes\_skybox info.txt" />
+    <None Include="Assets\Military1\info.txt" />
     <None Include="Assets\Standard Assets\CrossPlatformInput\CrossPlatformInputGuidelines.txt" />
     <None Include="Assets\Standard Assets\Effects\GlassRefraction\Shaders\GlassStainedBumpDistort.shader" />
     <None Include="Assets\Standard Assets\Effects\ImageEffects\Shaders\BlendModesOverlay.shader" />

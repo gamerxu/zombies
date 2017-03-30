@@ -1,11 +1,15 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class ZombieControoler : MonoBehaviour {
+public class ZombieControoler : NetworkBehaviour {
 
-	// Use this for initialization
-	void Start () {
+   [SyncVar]
+   private int health = 100;
+
+   // Use this for initialization
+   void Start () {
 		
 	}
 	
@@ -16,6 +20,15 @@ public class ZombieControoler : MonoBehaviour {
 
    void OnCollisionEnter(Collision collision)
    {
-      Debug.Log("Zombie OnCollisionEnter");
+      if(isServer)
+      {
+         Debug.Log("Zombie OnCollisionEnter " + collision.collider.tag);
+         if (collision.collider.tag.Equals("bullet"))
+         {
+            health -= 10;
+         }
+      }
+    
+      
    }
 }

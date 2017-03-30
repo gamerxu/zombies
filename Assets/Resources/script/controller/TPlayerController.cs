@@ -29,7 +29,7 @@ class TPlayerController : NetworkBehaviour
 
    void Awake()
    {
-
+      
    }
 
    void Start()
@@ -115,10 +115,12 @@ class TPlayerController : NetworkBehaviour
       weapon.transform.localRotation = weapon.transform.rotation;
       weapon_clone.SetActive(true);
 
-      //NetworkServer.Spawn(weapon_clone);
+     // NetworkServer.Spawn(weapon_clone);
       NetworkServer.SpawnWithClientAuthority(weapon_clone, connectionToClient);
 
-
+      //Set Weapon
+      GetComponent<PlayerItems>().weapon = weapon_clone.GetComponent<NetworkIdentity>().netId;
+      Debug.Log("wpId " + weapon_clone.GetComponent<NetworkIdentity>().netId);
    }
 
 }

@@ -57,7 +57,6 @@ public class BulletScirpt : NetworkBehaviour {
          foreach (ContactPoint contact in collision.contacts)
          {
             ContactPoint point = contact;
-            Debug.Log(Quaternion.LookRotation(hit.transform.position, transform.position));
             GameObject.Instantiate(bloodEffect, point.point, Quaternion.LookRotation(hit.transform.position, transform.position));
            
          }

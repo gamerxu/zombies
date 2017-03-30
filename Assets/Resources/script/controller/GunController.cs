@@ -9,9 +9,6 @@ public class GunController : NetworkBehaviour
 
    private float lastFire = 0;
 
-   [SerializeField]
-   private float fireInterval = 0.3f;
-
    [SyncVar]
    private bool firing = false;
    [SyncVar]
@@ -35,14 +32,20 @@ public class GunController : NetworkBehaviour
 
    private GameObject character;
 
-   
+   ItemInfo itemInfo;
 
    //private GameObject currentFireEffect;
+
+   void Awake()
+   {
+      
+   }
 
    // Use this for initialization
    void Start()
    {
       character = ClientScene.FindLocalObject(parentNetId);
+      itemInfo = GetComponent<ItemInfo>();
    }
 
    // Update is called once per frame
@@ -52,8 +55,6 @@ public class GunController : NetworkBehaviour
       {
          return;
       }
-
-
    }
 
    void Update()
@@ -66,7 +67,7 @@ public class GunController : NetworkBehaviour
      
       if (CrossPlatformInputManager.GetButton("Fire1"))
       {
-         CmdFire();
+        // CmdFire();
       }
       else if (CrossPlatformInputManager.GetButtonUp("Fire1"))
       {
@@ -90,7 +91,7 @@ public class GunController : NetworkBehaviour
    public void CmdFire()
    {
 
-      if (Time.time - lastFire >= fireInterval)
+      if (Time.time - lastFire >= itemInfo.fireInterval)
       {
 
          lastFire = Time.time;
