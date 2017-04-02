@@ -34,7 +34,6 @@ public class ItemMenu : MonoBehaviour
    private Texture2D cursorIcon;
    private GameObject hodingItem;
 
-
    // Use this for initialization
    void Start()
    {
@@ -57,6 +56,13 @@ public class ItemMenu : MonoBehaviour
       {
          //TODO drap item
          Debug.Log("drap item");
+         playerItems.CmdDrapItem(hodingItem);
+         ResetPickUp();
+      }
+
+      if(Input.GetMouseButtonUp(1) && pickUpSelfItem)
+      {
+         ResetPickUp();
       }
    }
    void OnGUI()
@@ -66,7 +72,7 @@ public class ItemMenu : MonoBehaviour
          return;
       }
       GUI.skin = skin;
-
+      GUI.depth = 0;
       //bar = new Rect(windowX, windowY, windowWidth, windowHeight);
       bar = GUILayout.Window(0, bar, BarItem, "Character");
 
@@ -75,7 +81,7 @@ public class ItemMenu : MonoBehaviour
          ShowInfo();
       }
 
-      if(pickUpSelfItem)
+      if (pickUpSelfItem)
       {
          DrewCursor();
       }
@@ -97,26 +103,25 @@ public class ItemMenu : MonoBehaviour
 
    void ItemsMenu()
    {
-
       //Items Menu;
       GUILayout.BeginVertical();
 
-      for (int i = 0; i < 20; i++)
+      for (int i = 6; i < 26; i++)
       {
-         if (i == 0)
+         if (i == 6)
          {
             GUILayout.BeginHorizontal();
          }
 
-         if (i % 5 == 0 && i != 0)
+         if (i % 5 == 1 && i != 6)
          {
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
          }
-         if (GUILayout.Button("", GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
-         {
-            Debug.Log("test1");
-         }
+
+
+         GameObject itemObj = ClientScene.FindLocalObject(playerItems.indexItems(i));
+         ItemGUI(itemObj,i);
 
       }
       GUILayout.EndHorizontal();
@@ -136,53 +141,22 @@ public class ItemMenu : MonoBehaviour
 
       //Weapon
       GUILayout.Label("weapon", GUILayout.Width(labelSize));
-
-      GameObject weaponObj = ClientScene.FindLocalObject(playerItems.weapon);
-      if (weaponObj == null)
-      {
-         Debug.Log("wpnetId " + playerItems.weapon);
-      }
-      Texture2D icon = weaponObj.GetComponent<ItemInfo>().icon;
-
-      GUIContent c = new GUIContent(icon, weaponObj.GetComponent<ItemInfo>().getDescription());
-      if (GUILayout.Button(c, GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
-      {
-
-         if (Input.GetMouseButtonUp(0))
-         {
-            Debug.Log("left click");
-            if (pickUpSelfItem)
-            {
-               //TODO change item
-               Debug.Log("change item");
-            } else
-            {
-               PickUpSelfItems(weaponObj, 0);
-            }
-            
-         }
-         else if (Input.GetMouseButtonUp(1))
-         {
-            Debug.Log("right click");
-         }
-      }
-
-      //Weapon
-
-      GUILayout.Label("weapon", GUILayout.Width(labelSize));
-      if (GUILayout.Button("", GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
-      {
-         Debug.Log("test1");
-      }
+      GameObject weaponObj = ClientScene.FindLocalObject(playerItems.indexItems(0));
+      ItemGUI(weaponObj,0);
 
 
-      //Weapon
+      //glove
 
-      GUILayout.Label("weapon", GUILayout.Width(labelSize));
-      if (GUILayout.Button("", GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
-      {
-         Debug.Log("test1");
-      }
+      GUILayout.Label("glove", GUILayout.Width(labelSize));
+      GameObject gloveObj = ClientScene.FindLocalObject(playerItems.indexItems(1));
+      ItemGUI(gloveObj,1);
+
+      //Head
+      GUILayout.Label("gear", GUILayout.Width(labelSize));
+      GameObject gearObj = ClientScene.FindLocalObject(playerItems.indexItems(2));
+      ItemGUI(gearObj,2);
+
+
 
       //Column 1 End
       GUILayout.EndVertical();
@@ -191,23 +165,17 @@ public class ItemMenu : MonoBehaviour
       GUILayout.BeginVertical();
       //Weapon
 
-      GUILayout.Label("weapon", GUILayout.Width(labelSize));
-      if (GUILayout.Button("", GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
-      {
-         Debug.Log("test1");
-      }
+      GUILayout.Label("head", GUILayout.Width(labelSize));
+      GameObject headObj = ClientScene.FindLocalObject(playerItems.indexItems(3));
+      ItemGUI(headObj,3);
 
-      GUILayout.Label("weapon", GUILayout.Width(labelSize));
-      if (GUILayout.Button("", GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
-      {
-         Debug.Log("test1");
-      }
+      GUILayout.Label("body", GUILayout.Width(labelSize));
+      GameObject bodyObj = ClientScene.FindLocalObject(playerItems.indexItems(4));
+      ItemGUI(bodyObj,4);
 
-      GUILayout.Label("weapon", GUILayout.Width(labelSize));
-      if (GUILayout.Button("", GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
-      {
-         Debug.Log("test1");
-      }
+      GUILayout.Label("shoes", GUILayout.Width(labelSize));
+      GameObject shoesObj = ClientScene.FindLocalObject(playerItems.indexItems(5));
+      ItemGUI(shoesObj,5);
 
       //Column 2 End
       GUILayout.EndVertical();
@@ -252,24 +220,69 @@ public class ItemMenu : MonoBehaviour
       //Vector3 pos = Camera.main.WorldToScreenPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, 10f));
       //GUIUtility.ScreenToGUIPoint()
       //Debug.Log("OnMouseOver " + Event.current.mousePosition + " " + Input.mousePosition);
-      int tempDepth = GUI.depth = 0;
+     // int tempDepth = GUI.depth;
+      //GUI.depth = 1;
       Vector2 textSize = skin.box.CalcSize(new GUIContent(lastTooltip));
       GUI.TextArea(new Rect(Event.current.mousePosition.x + 25, Event.current.mousePosition.y + 25, textSize.x, textSize.y), lastTooltip);
       // GUILayout.BeginArea(new Rect(Event.current.mousePosition.x + 25, Event.current.mousePosition.y + 25, 100, 100));
       //GUILayout.TextArea(lastTooltip);
       // GUILayout.EndArea();
-      GUI.depth = tempDepth;
+     // GUI.depth = tempDepth;
    }
 
-   void PickUpSelfItems(GameObject item,int itemIdx)
+   void PickUpSelfItems(GameObject item, int itemIdx)
    {
       hodingItem = item;
       cursorIcon = item.GetComponent<ItemInfo>().icon;
       pickUpSelfItem = true;
    }
 
+   void ResetPickUp()
+   {
+      hodingItem = null;
+      pickUpSelfItem = false;
+   }
+
    void DrewCursor()
    {
       GUI.DrawTexture(new Rect(Input.mousePosition.x, Screen.height - Input.mousePosition.y, 45, 45), cursorIcon);
+   }
+
+   void ItemGUI(GameObject item,int index)
+   {
+      if (item != null)
+      {
+         Texture2D icon = item.GetComponent<ItemInfo>().icon;
+
+         GUIContent c = new GUIContent(icon, item.GetComponent<ItemInfo>().getDescription());
+         if (GUILayout.Button(c, GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
+         {
+
+            if (Input.GetMouseButtonUp(0))
+            {
+               if (pickUpSelfItem)
+               {
+                  //TODO change item
+                  Debug.Log("change item");
+                  //Change equip
+                  playerItems.CmdChangeItem(index, item,hodingItem);
+                  ResetPickUp();
+               }
+               else if(!playerItems.IsEmptyItem(item.GetComponent<NetworkIdentity>().netId))
+               {
+                  PickUpSelfItems(item, index);
+               }
+
+            }
+            
+         }
+      }
+      else
+      {
+         if (GUILayout.Button("", GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
+         {
+            Debug.Log("empty");
+         }
+      }
    }
 }

@@ -42,8 +42,6 @@ class TPlayerController : NetworkBehaviour
 
          GetComponent<Play_syncRotation>().Transmit(transform.transform.position, transform.rotation);
 
-         CmdEquip(this.netId);
-
       }
 
    }
@@ -103,25 +101,6 @@ class TPlayerController : NetworkBehaviour
    }
 
 
-   [Command]
-   void CmdEquip(NetworkInstanceId parentId)
-   {
-
-      GameObject weapon = Resources.Load("prefeb/items/weapons/M4A1/M4A1") as GameObject;
-      //Debug.Log(weapon.transform.rotation);
-      GameObject weapon_clone = GameObject.Instantiate(weapon, weapon.transform.position, weapon.transform.rotation);
-      weapon_clone.GetComponent<GunController>().gunQuaternion = weapon_clone.transform.rotation;
-      weapon_clone.GetComponent<GunController>().parentNetId = parentId;
-      weapon.transform.localRotation = weapon.transform.rotation;
-      weapon_clone.SetActive(true);
-
-     // NetworkServer.Spawn(weapon_clone);
-      NetworkServer.SpawnWithClientAuthority(weapon_clone, connectionToClient);
-
-      //Set Weapon
-      GetComponent<PlayerItems>().weapon = weapon_clone.GetComponent<NetworkIdentity>().netId;
-      Debug.Log("wpId " + weapon_clone.GetComponent<NetworkIdentity>().netId);
-   }
 
 }
 

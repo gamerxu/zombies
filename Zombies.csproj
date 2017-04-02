@@ -118,8 +118,11 @@
     <Compile Include="Assets\Resources\script\controller\TPlayerController.cs" />
     <Compile Include="Assets\Resources\script\controller\ThrowGrenade.cs" />
     <Compile Include="Assets\Resources\script\controller\ZombieControoler.cs" />
+    <Compile Include="Assets\Resources\script\items\GainItem.cs" />
     <Compile Include="Assets\Resources\script\items\ItemInfo.cs" />
     <Compile Include="Assets\Resources\script\items\PlayerItems.cs" />
+    <Compile Include="Assets\Resources\script\items\ResourceLocation.cs" />
+    <Compile Include="Assets\Resources\script\items\TestGainItem.cs" />
     <Compile Include="Assets\Resources\script\network\CustomNetworkManager.cs" />
     <Compile Include="Assets\Resources\script\network\NetworkManagerHUD.cs" />
   </ItemGroup>

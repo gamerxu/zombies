@@ -49,6 +49,6 @@ public class ItemInfo : MonoBehaviour {
 
 public enum ItemType
 {
-   weapon, medicine
+   weapon, glove,gear,head,body,shoes,items,ammo
 }
 
