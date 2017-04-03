@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 
-public class ItemMenu : MonoBehaviour
+public class ItemMenu : NetworkBehaviour
 {
 
 
@@ -34,18 +34,28 @@ public class ItemMenu : MonoBehaviour
    private Texture2D cursorIcon;
    private GameObject hodingItem;
 
+ 
+
    // Use this for initialization
    void Start()
    {
-      windowX = (screenWidth - windowWidth) / 2;
-      windowY = (screenHeight - windowHeight) / 2;
-      bar = new Rect(windowX, windowY, windowWidth, windowHeight);
-      playerItems = GetComponent<PlayerItems>();
+      if(isLocalPlayer)
+      {
+         windowX = (screenWidth - windowWidth) / 2;
+         windowY = (screenHeight - windowHeight) / 2;
+         bar = new Rect(windowX, windowY, windowWidth, windowHeight);
+         playerItems = GetComponent<PlayerItems>();
+      }
+     
    }
 
    // Update is called once per frame
    void Update()
    {
+      if (!isLocalPlayer)
+      {
+         return;
+      }
 
       if (Input.GetKeyDown(KeyCode.C))
       {
@@ -255,9 +265,8 @@ public class ItemMenu : MonoBehaviour
          Texture2D icon = item.GetComponent<ItemInfo>().icon;
 
          GUIContent c = new GUIContent(icon, item.GetComponent<ItemInfo>().getDescription());
-         if (GUILayout.Button(c, GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)))
+         if (GUILayout.Button(c, GUILayout.Width(buttonSize), GUILayout.Height(buttonSize)) && isLocalPlayer)
          {
-
             if (Input.GetMouseButtonUp(0))
             {
                if (pickUpSelfItem)

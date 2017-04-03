@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Networking;
 
-public class GainItem : NetworkBehaviour {
+public class GainItem : NetworkBehaviour
+{
 
    [SyncVar]
    public string prefabURI;
@@ -16,52 +17,44 @@ public class GainItem : NetworkBehaviour {
 
    Color beforeColor;
    // Use this for initialization
-   void Start () {
-      
-      
+   void Start()
+   {
+
+
    }
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+   // Update is called once per frame
+   void Update()
+   {
+
+   }
 
    void OnMouseEnter()
    {
-      Debug.Log("OnMouseEnter :" + this.gameObject.name);
       beforeColor = GetComponentInChildren<Renderer>().material.color;
       SetColor(Color.green);
-     // GetComponentInChildren<Renderer>().material.color = Color.green;
+      // GetComponentInChildren<Renderer>().material.color = Color.green;
    }
 
    void OnMouseExit()
    {
-      SetColor(beforeColor); 
+      SetColor(beforeColor);
    }
 
    void OnMouseUp()
    {
-      GameObject player = GameObject.FindGameObjectWithTag("Player");
-      if(Vector3.Distance(this.transform.position,player.transform.position) <= pickUpDistance)
+      GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+      foreach (GameObject player in players)
       {
-         if(player.GetComponent<PlayerItems>().HaveSlot())
+         if (player.GetComponent<NetworkIdentity>().isLocalPlayer)
          {
-            if(objectNetId != null && objectNetId.Value > 0)
-            {
-               player.GetComponent<PlayerItems>().CmdUnPackItemById(objectNetId);
-            } else
-            {
-               player.GetComponent<PlayerItems>().CmdUnPackItem(prefabURI);
-            }
-            
-            Destroy(this.gameObject);
-         } else
-         {
-            Debug.Log("Enough");
+            player.GetComponent<PlayerItems>().CmdPickUp(this.netId);
          }
-         
       }
+      
    }
+
+   
 
    void SetColor(Color newColor)
    {

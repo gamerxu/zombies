@@ -7,6 +7,9 @@ using UnityEngine.Networking;
 public class CustomNetworkManager : NetworkManager
 {
 
-   
 
+   public override void OnStartServer()
+   {
+      Debug.Log("CustomNetworkManager : OnStartServer" );
+   }
 }

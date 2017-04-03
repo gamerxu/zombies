@@ -1,36 +1,70 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.Networking;
 
 public class PlayerItems : NetworkBehaviour
 {
-
    [SyncVar]
    public NetworkInstanceId empty;
 
-   private SyncListNetworkInstanceId items = new SyncListNetworkInstanceId();
+   private SyncListUInt items = new SyncListUInt();
 
+   [SerializeField]
+   private float pickUpDistance = 2.0f;
+
+   void Awake()
+   {
+   }
+
+   public override void OnStartServer()
+   {
+
+
+      Debug.Log("OnStartServer...");
+
+   }
 
    void Start()
    {
+      Debug.Log(isLocalPlayer + " Start..." + isServer);
 
-      GameObject emptyObject = Resources.Load("prefeb/items/EmptyObject") as GameObject;
-      GameObject emptyObject_clone = GameObject.Instantiate(emptyObject, emptyObject.transform.position, emptyObject.transform.rotation);
-      NetworkServer.Spawn(emptyObject_clone);
-      empty = emptyObject_clone.GetComponent<NetworkIdentity>().netId;
-      for (int i = 0; i < 26; i++)
+      if (isServer && isLocalPlayer)
       {
-         items.Add(empty);
+         GameObject emptyObject = Resources.Load("prefeb/items/EmptyObject") as GameObject;
+         GameObject emptyObject_clone = GameObject.Instantiate(emptyObject, emptyObject.transform.position, emptyObject.transform.rotation);
+         NetworkServer.Spawn(emptyObject_clone);
       }
-      CmdEquip();
+
+      if (isServer)
+      {
+
+         GameObject emptyObj = GameObject.FindGameObjectWithTag("empty_item");
+
+         empty = emptyObj.GetComponent<NetworkIdentity>().netId;
+         Debug.Log("Is server Start..." + empty);
+         for (int i = 0; i < 26; i++)
+         {
+            items.Add(empty.Value);
+         }
+      }
+
+      Debug.Log(empty + " : Start..." + items.Count + " :" + ClientScene.FindLocalObject(empty));
+
+      if (isLocalPlayer)
+      {
+         CmdEquip();
+      }
+
    }
+
 
    public bool HaveSlot()
    {
       for (int i = 5; i < 26; i++)
       {
-         if (items[i].Equals(empty))
+         if (items[i].Equals(empty.Value))
          {
             return true;
          }
@@ -44,30 +78,65 @@ public class PlayerItems : NetworkBehaviour
    }
 
    [Command]
+   public void CmdPickUp(NetworkInstanceId boxNetId)
+   {
+
+      GameObject gainItem = NetworkServer.FindLocalObject(boxNetId);
+
+      Debug.Log(gainItem.GetComponent<GainItem>().objectNetId + " CmdPickUp : " + this.netId);
+
+      if (Vector3.Distance(this.transform.position, transform.position) <= pickUpDistance)
+      {
+         if (HaveSlot())
+         {
+            if (gainItem.GetComponent<GainItem>().objectNetId != null && gainItem.GetComponent<GainItem>().objectNetId.Value > 0)
+            {
+               CmdUnPackItemById(gainItem.GetComponent<GainItem>().objectNetId);
+            }
+            else
+            {
+               CmdUnPackItem(gainItem.GetComponent<GainItem>().prefabURI);
+            }
+
+            Destroy(gainItem.gameObject);
+         }
+         else
+         {
+            Debug.Log("Enough");
+         }
+
+      }
+   }
+
+
    public void CmdUnPackItem(string prefabUri)
    {
+
       NetworkInstanceId item = UnPackWeapon(prefabUri);
 
       for (int i = 6; i < 26; i++)
       {
-         if (items[i].Equals(empty))
+         if (items[i].Equals(empty.Value))
          {
             //This is a empty so put the item there
-            items[i] = item;
+            items[i] = item.Value;
             return;
          }
       }
+
+
    }
 
-   [Command]
    public void CmdUnPackItemById(NetworkInstanceId objectNetId)
    {
+      Debug.Log("CmdUnPackItemById : " + objectNetId);
+
       for (int i = 6; i < 26; i++)
       {
-         if (items[i].Equals(empty))
+         if (items[i].Equals(empty.Value))
          {
             //This is a empty so put the item there
-            items[i] = objectNetId;
+            items[i] = objectNetId.Value;
             return;
          }
       }
@@ -93,9 +162,9 @@ public class PlayerItems : NetworkBehaviour
 
    public NetworkInstanceId indexItems(int index)
    {
-      if(index < items.Count)
+      if (index < items.Count)
       {
-         return items[index];
+         return new NetworkInstanceId(items[index]);
       }
       return new NetworkInstanceId(0);
    }
@@ -103,63 +172,68 @@ public class PlayerItems : NetworkBehaviour
    [Command]
    public void CmdDrapItem(GameObject gameObject)
    {
+
+      Debug.Log("CmdDrapItem : " + gameObject.GetComponent<NetworkIdentity>().netId);
+
       string prefabPath = "";
       // if(ItemType.weapon == gameObject.GetComponent<ItemInfo>().itemType)
       // {
       prefabPath = ResourceLocation.weapon_box_path;
       //  } 
       GameObject _box = ResourceLocation.Load(prefabPath) as GameObject;
-      GameObject _box_clone = GameObject.Instantiate(_box, transform.position + new Vector3(1, 0, 1), _box.transform.rotation);
+      GameObject _box_clone = GameObject.Instantiate(_box, transform.position + new Vector3(1, 1, 1), _box.transform.rotation);
       _box_clone.GetComponent<GainItem>().objectNetId = gameObject.GetComponent<NetworkIdentity>().netId;
+
       NetworkServer.Spawn(_box_clone);
+
       _box_clone.SetActive(true);
 
-      int idx = items.IndexOf(gameObject.GetComponent<NetworkIdentity>().netId);
+      int idx = items.IndexOf(gameObject.GetComponent<NetworkIdentity>().netId.Value);
       if (idx >= 0)
       {
-         items[idx] = empty;
+         items[idx] = empty.Value;
       }
    }
 
    [Command]
    public void CmdChangeItem(int clickItemIndex, GameObject clickItem, GameObject holdItem)
    {
-      NetworkInstanceId srcNetId = items[clickItemIndex];
+      NetworkInstanceId srcNetId = new NetworkInstanceId(items[clickItemIndex]);
       NetworkInstanceId destNetId = holdItem.GetComponent<NetworkIdentity>().netId;
 
-      int destIndex = items.IndexOf(destNetId);
+      int destIndex = items.IndexOf(destNetId.Value);
       //If source item is emptyItem then changes directly
-      if(empty.Equals(srcNetId) && clickItemIndex >= 6)
+      if (empty.Equals(srcNetId) && clickItemIndex >= 6)
       {
-         items[clickItemIndex] = destNetId;
-         items[destIndex] = empty;
+         items[clickItemIndex] = destNetId.Value;
+         items[destIndex] = empty.Value;
          return;
       }
 
       //If source item is equip 
-      if(clickItemIndex < 6 && validateItemType(clickItemIndex, holdItem.GetComponent<ItemInfo>().itemType))
+      if (clickItemIndex < 6 && validateItemType(clickItemIndex, holdItem.GetComponent<ItemInfo>().itemType))
       {
-         items[clickItemIndex] = destNetId;
-         items[destIndex] = srcNetId;
+         items[clickItemIndex] = destNetId.Value;
+         items[destIndex] = srcNetId.Value;
       }
 
       //If dest item is equip
-      if(destIndex < 6 && (holdItem.GetComponent<ItemInfo>().itemType == clickItem.GetComponent<ItemInfo>().itemType))
+      if (destIndex < 6 && (holdItem.GetComponent<ItemInfo>().itemType == clickItem.GetComponent<ItemInfo>().itemType))
       {
-         items[clickItemIndex] = destNetId;
-         items[destIndex] = srcNetId;
+         items[clickItemIndex] = destNetId.Value;
+         items[destIndex] = srcNetId.Value;
       }
 
       //Both are in item position
-      if(destIndex >= 6 && clickItemIndex >=6)
+      if (destIndex >= 6 && clickItemIndex >= 6)
       {
-         items[clickItemIndex] = destNetId;
-         items[destIndex] = srcNetId;
+         items[clickItemIndex] = destNetId.Value;
+         items[destIndex] = srcNetId.Value;
       }
-      
+
    }
 
-   private bool validateItemType(int index , ItemType itemType)
+   private bool validateItemType(int index, ItemType itemType)
    {
       Debug.Log("validateItemType:" + index + " " + itemType);
       switch (index)
@@ -222,21 +296,7 @@ public class PlayerItems : NetworkBehaviour
       //Set Weapon
       Debug.Log("wpId " + weapon_clone.GetComponent<NetworkIdentity>().netId);
 
-      items[0] = weapon_clone.GetComponent<NetworkIdentity>().netId;
+      items[0] = weapon_clone.GetComponent<NetworkIdentity>().netId.Value;
    }
 
-   public class SyncListNetworkInstanceId : SyncList<NetworkInstanceId>
-   {
-
-      protected override void SerializeItem(NetworkWriter writer, NetworkInstanceId item)
-      {
-         writer.Write(item);
-      }
-
-      protected override NetworkInstanceId DeserializeItem(NetworkReader reader)
-      {
-         return reader.ReadNetworkId();
-      }
-
-   }
 }
